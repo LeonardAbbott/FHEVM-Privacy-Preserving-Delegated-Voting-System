@@ -1,0 +1,146 @@
+VIDEO NARRATION DIALOGUE
+FHEVM Privacy-Preserving Delegated Voting System
+Full English Script - No Timestamps
+
+================================================================================
+
+INTRODUCTION
+
+Welcome to the FHEVM Privacy-Preserving Delegated Voting System - a breakthrough in secure blockchain governance using Fully Homomorphic Encryption.
+
+================================================================================
+
+PROBLEM STATEMENT
+
+Traditional blockchain voting exposes individual choices on-chain. Our solution uses FHE technology to keep votes completely private while enabling verifiable computation.
+
+================================================================================
+
+LIVE DEMONSTRATION - SETUP
+
+Watch as we connect to the live application on Sepolia testnet. MetaMask connects seamlessly, and FHE encryption keys are generated automatically for privacy-preserving operations.
+
+================================================================================
+
+CORE FEATURES DEMONSTRATION
+
+The system demonstrates four key features:
+
+First, voter registration on-chain.
+
+Second, proposal creation with automatic deadlines.
+
+Third, encrypted voting where your choice is hidden using FHE.
+
+And fourth, flexible delegation allowing you to transfer voting power to trusted representatives.
+
+Notice on Etherscan how individual votes remain encrypted and unreadable.
+
+================================================================================
+
+TECHNICAL HIGHLIGHTS
+
+Under the hood, votes are stored as encrypted euint32 values.
+
+Homomorphic operations enable vote tallying without decryption.
+
+Only the contract owner can decrypt final results using cryptographic proofs.
+
+================================================================================
+
+CONCLUSION
+
+This production-ready system is deployed on Sepolia testnet.
+
+Try it yourself at the link shown, explore the verified contract on Etherscan, or dive into the open-source code.
+
+Privacy-preserving governance is now a reality with FHEVM.
+
+================================================================================
+
+ADDITIONAL NARRATION OPTIONS
+
+================================================================================
+
+ALTERNATIVE OPENING (More Technical)
+
+This is a fully functional implementation of delegated voting using Zama's FHEVM technology. Every vote is encrypted using Fully Homomorphic Encryption, ensuring complete privacy while maintaining verifiable on-chain governance.
+
+================================================================================
+
+ALTERNATIVE CLOSING (More Promotional)
+
+Join the future of private blockchain governance. This open-source project demonstrates the power of FHEVM for real-world applications. Visit our GitHub repository to explore the code, deploy your own instance, or contribute to the project.
+
+================================================================================
+
+FEATURE HIGHLIGHT - ENCRYPTION PROCESS
+
+When you cast a vote, your choice is encrypted using FHE before it ever touches the blockchain. The encrypted data is stored on-chain as a euint32 handle. Vote tallying happens through homomorphic addition operations, meaning votes are counted without ever being decrypted.
+
+================================================================================
+
+FEATURE HIGHLIGHT - DELEGATION MECHANISM
+
+Delegation in this system is unique. When you delegate your voting power, the transfer happens on-chain through encrypted operations. Your delegate receives increased voting power, but they never learn how you would have voted on past proposals. Privacy is maintained throughout the entire process.
+
+================================================================================
+
+FEATURE HIGHLIGHT - ACCESS CONTROL
+
+The smart contract implements multi-layered access control. Only the contract owner can register voters and create proposals. Only registered voters can cast votes or delegate power. And only the owner can decrypt final results after the voting period ends.
+
+================================================================================
+
+TECHNICAL DETAIL - HOMOMORPHIC OPERATIONS
+
+The contract uses TFHE library operations including asEuint32 for encryption, add for homomorphic addition, select for conditional operations, and decrypt for authorized result revelation. These operations allow complex computation on encrypted data.
+
+================================================================================
+
+USE CASE EXAMPLES
+
+This system is perfect for:
+
+- DAO governance requiring vote privacy
+- Corporate shareholder voting with confidentiality requirements
+- Community decisions where anonymity encourages honest participation
+- Any voting scenario where privacy and verifiability are both essential
+
+================================================================================
+
+SECURITY ASSURANCE
+
+This implementation prevents common vulnerabilities including double voting, unauthorized access, and vote manipulation. All state changes are validated through modifiers. Encrypted data cannot be accessed without proper authorization. The system is audited and tested comprehensively.
+
+================================================================================
+
+DEPLOYMENT INFORMATION
+
+The contract is deployed on Ethereum Sepolia testnet at address 0xA52413121E6C22502efACF91714889f85BaA9A88. The contract is verified on Etherscan, allowing anyone to inspect the source code and verify its security properties. The frontend is hosted on Vercel for instant access.
+
+================================================================================
+
+CALL TO ACTION - DEVELOPERS
+
+Developers can fork this repository as a foundation for privacy-preserving applications. The code includes comprehensive comments, testing examples, and deployment scripts. Build the next generation of private blockchain applications with FHEVM.
+
+================================================================================
+
+CALL TO ACTION - USERS
+
+Users can try the live demo immediately. Connect your MetaMask wallet, switch to Sepolia testnet, and experience privacy-preserving voting firsthand. No signup required, just your Ethereum wallet.
+
+================================================================================
+
+ACKNOWLEDGMENTS
+
+Built for the Zama FHEVM Example Hub Bounty, December 2025. This project demonstrates practical implementation of Fully Homomorphic Encryption for blockchain applications. Thank you to the Zama team for pioneering FHE technology.
+
+================================================================================
+
+END NOTES
+
+For more information, visit the GitHub repository, read the comprehensive documentation, or join the community discussion. Privacy-preserving blockchain technology is here, and it's ready for production use.
+
+================================================================================
