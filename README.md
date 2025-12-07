@@ -64,7 +64,7 @@ DelegatedVoting/
 ```bash
 # Clone the repository
 git clone https://github.com/LeonardAbbott/FHEVM-Privacy-Preserving-Delegated-Voting-System.git
-cd DelegatedVoting
+cd FHEVM-Privacy-Preserving-Delegated-Voting-System
 
 # Install dependencies
 npm install
