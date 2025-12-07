@@ -1,0 +1,13 @@
+node_modules
+artifacts
+cache
+coverage
+typechain
+typechain-types
+deployments
+.env
+.env.local
+dist
+build
+*.log
+package-lock.json
