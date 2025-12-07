@@ -63,7 +63,7 @@ DelegatedVoting/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/DelegatedVoting.git
+git clone https://github.com/LeonardAbbott/FHEVM-Privacy-Preserving-Delegated-Voting-System.git
 cd DelegatedVoting
 
 # Install dependencies
@@ -218,8 +218,8 @@ TFHE.allowTransient(proposals[proposalId].yesVotes, msg.sender);
 
 ### Live Demo
 
-- **Website**: [https://delegated-voting.vercel.app/](https://delegated-voting.vercel.app/)
-- **Video Demo**: Included in repository (Video Demonstration.mp4)
+- **Website**: [https://fhevm-privacy-preserving-delegated.vercel.app/](https://fhevm-privacy-preserving-delegated.vercel.app/)
+- **Video Demo**:[Video](https://streamable.com/z8nnb0) Included in repository (FHEVM Privacy-Preserving Delegated Voting System.mp4) 
 
 ### Verification
 
@@ -263,7 +263,7 @@ A comprehensive video demonstration is included showing:
 6. **Delegation**: Delegating voting power to representatives
 7. **Result Decryption**: Authorized decryption by contract owner
 
-See `Video Demonstration.mp4` in the repository root.
+See `FHEVM Privacy-Preserving Delegated Voting System.mp4` in the repository root.
 
 ## Architecture Decisions
 
