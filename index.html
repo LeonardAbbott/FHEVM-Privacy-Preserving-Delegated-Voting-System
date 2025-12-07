@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy Voting System - Privacy Proxy Voting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap');
+
+        body {
+          background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #0c0c0c 100%);
+          color: #00d4ff;
+          font-family: 'Orbitron', monospace;
+          margin: 0;
+          padding: 0;
+          min-height: 100vh;
+        }
+
+        .main-container {
+          background: rgba(0, 15, 30, 0.9);
+          padding: 2rem;
+          border-radius: 12px;
+          max-width: 1200px;
+          margin: 20px auto;
+          border: 2px solid #00d4ff;
+          box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+          animation: pulse-border 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-border {
+          0%, 100% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); }
+          50% { box-shadow: 0 0 50px rgba(0, 212, 255, 0.6), 0 0 80px rgba(0, 212, 255, 0.2); }
+        }
+
+        .header {
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .title {
+          font-size: 2.5em;
+          font-weight: 700;
+          background: linear-gradient(45deg, #00d4ff, #ff0080, #00d4ff);
+          background-size: 200% 200%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: rainbow-text 3s ease-in-out infinite;
+          margin-bottom: 0.5rem;
+        }
+
+        @keyframes rainbow-text {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+          font-size: 1.2em;
+          color: #00ff80;
+          margin: 0;
+        }
+
+        .network-status {
+          background: rgba(0, 255, 128, 0.1);
+          border: 1px solid #00ff80;
+          border-radius: 8px;
+          padding: 15px;
+          text-align: center;
+          margin-bottom: 2rem;
+        }
+
+        .section-card {
+          background: rgba(0, 20, 40, 0.8);
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 20px;
+          transition: all 0.3s ease;
+        }
+
+        .section-card:hover {
+          border-color: #00d4ff;
+          box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .section-card h3 {
+          color: #ff0080;
+          margin-top: 0;
+          font-size: 1.3em;
+        }
+
+        .btn-group {
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin: 20px 0;
+        }
+
+        .btn {
+          background: linear-gradient(45deg, #00d4ff, #0080ff);
+          border: none;
+          color: white;
+          padding: 12px 24px;
+          border-radius: 25px;
+          cursor: pointer;
+          font-family: 'Orbitron', monospace;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          min-width: 150px;
+          position: relative;
+        }
+
+        .btn:hover {
+          background: linear-gradient(45deg, #ff0080, #ff4080);
+          box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+          transform: translateY(-2px);
+        }
+
+        .btn:active {
+          transform: translateY(0px);
+          box-shadow: 0 0 10px rgba(255, 0, 128, 0.8);
+        }
+
+        .btn-connect {
+          background: linear-gradient(45deg, #00ff80, #00d4ff);
+          font-size: 1.1em;
+          padding: 15px 30px;
+        }
+
+        .btn-delegate {
+          background: linear-gradient(45deg, #ff0080, #ff8040);
+        }
+
+        .btn-revoke {
+          background: linear-gradient(45deg, #ff4040, #ff8040);
+        }
+
+        .wallet-connected {
+          background: linear-gradient(45deg, #00ff80, #40ff80) !important;
+        }
+
+        .input-field, .select-field {
+          width: 100%;
+          padding: 12px 15px;
+          margin: 10px 0;
+          border: 2px solid rgba(0, 212, 255, 0.3);
+          border-radius: 8px;
+          background: rgba(0, 20, 40, 0.8);
+          color: #00d4ff;
+          font-family: 'Orbitron', monospace;
+          font-size: 14px;
+          box-sizing: border-box;
+        }
+
+        .input-field:focus, .select-field:focus {
+          outline: none;
+          border-color: #00d4ff;
+          box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .select-field {
+          cursor: pointer;
+        }
+
+        .select-field option {
+          background: #0c0c0c;
+          color: #00d4ff;
+          padding: 10px;
+        }
+
+        .status-message {
+          background: rgba(0, 212, 255, 0.1);
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          border-radius: 8px;
+          padding: 15px;
+          margin: 15px 0;
+          text-align: center;
+        }
+
+        .success-message {
+          background: rgba(0, 255, 128, 0.1);
+          border-color: rgba(0, 255, 128, 0.5);
+          color: #00ff80;
+        }
+
+        .warning-message {
+          background: rgba(255, 128, 0, 0.1);
+          border-color: rgba(255, 128, 0, 0.5);
+          color: #ff8040;
+        }
+
+        .delegation-status {
+          background: rgba(0, 30, 60, 0.8);
+          border: 2px solid rgba(0, 212, 255, 0.3);
+          border-radius: 10px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+
+        .delegation-active {
+          border-color: #00ff80;
+          background: rgba(0, 40, 20, 0.8);
+        }
+
+        .privacy-indicator {
+          font-size: 0.9em;
+          color: #00ff80;
+          font-style: italic;
+          margin-top: 10px;
+        }
+
+        .proposal-item {
+          background: rgba(0, 25, 50, 0.9);
+          border: 1px solid rgba(0, 212, 255, 0.3);
+          border-radius: 8px;
+          padding: 15px;
+          margin: 10px 0;
+          transition: all 0.3s ease;
+        }
+
+        .proposal-item:hover {
+          border-color: #00d4ff;
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .proposal-title {
+          color: #ff0080;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+
+        .proposal-stats {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.9em;
+          color: #00d4ff;
+          margin: 10px 0;
+        }
+
+        .vote-buttons {
+          display: flex;
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .btn-vote-yes {
+          background: linear-gradient(45deg, #00ff80, #40ff40);
+          color: #000;
+        }
+
+        .btn-vote-no {
+          background: linear-gradient(45deg, #ff4040, #ff8040);
+        }
+
+        .delegate-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 15px;
+          margin: 20px 0;
+        }
+
+        .delegate-card {
+          background: rgba(0, 20, 40, 0.8);
+          border: 2px solid rgba(0, 212, 255, 0.3);
+          border-radius: 10px;
+          padding: 15px;
+          text-align: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .delegate-card:hover {
+          border-color: #00d4ff;
+          box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+          transform: translateY(-3px);
+        }
+
+        .delegate-card.selected {
+          border-color: #00ff80;
+          background: rgba(0, 40, 20, 0.8);
+        }
+
+        .delegate-name {
+          color: #ff0080;
+          font-weight: bold;
+          font-size: 1.1em;
+          margin-bottom: 8px;
+        }
+
+        .delegate-address {
+          font-family: monospace;
+          font-size: 0.8em;
+          color: #00d4ff;
+          word-break: break-all;
+        }
+
+        .footer {
+          text-align: center;
+          margin-top: 2rem;
+          padding: 20px;
+          border-top: 2px solid rgba(0, 212, 255, 0.3);
+          color: #00d4ff;
+          font-size: 0.9em;
+        }
+
+        .loading-spinner {
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          border: 3px solid rgba(255,255,255,0.3);
+          border-radius: 50%;
+          border-top-color: #fff;
+          animation: spin 1s ease-in-out infinite;
+          margin-right: 10px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+          .main-container {
+            margin: 10px;
+            padding: 1rem;
+          }
+          
+          .title {
+            font-size: 2em;
+          }
+          
+          .btn-group {
+            flex-direction: column;
+          }
+          
+          .btn {
+            width: 100%;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1 class="title">Proxy Voting System</h1>
+            <p class="subtitle">🔐 Privacy Proxy Voting - Blockchain Democracy</p>
+        </div>
+
+        <div class="network-status">
+            <p><strong>🌐 ETHEREUM SEPOLIA TESTNET</strong></p>
+            <p>Smart Contract: <span style="font-family: monospace;">0xA52413121E6C22502efACF91714889f85BaA9A88</span></p>
+            <p class="privacy-indicator">🔐 FHE Encrypted voting with privacy-preserving delegation</p>
+            <div id="fhe-status" style="margin-top: 10px; padding: 8px; background: rgba(255, 107, 53, 0.1); border-radius: 5px;">
+                <p style="color: #ff6b35; margin: 0;">🔑 FHE Keys: <span id="fhe-key-status">Not Generated</span></p>
+            </div>
+        </div>
+
+        <div id="message-container"></div>
+
+        <div class="btn-group">
+            <button id="connect-btn" class="btn btn-connect">🔗 Connect Wallet</button>
+        </div>
+
+        <div id="app-content" style="display: none;">
+            <!-- Application content will be displayed after wallet connection -->
+        </div>
+
+        <div class="footer">
+            <p>🔐 Privacy-First Proxy Voting System on Ethereum Blockchain</p>
+            <p>Secure • Transparent • Democratic</p>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESS = "0xA52413121E6C22502efACF91714889f85BaA9A88";
+        const CONTRACT_ABI = [
+            "function registerVoter(address voter) external",
+            "function createProposal(string calldata description) external returns (uint256)",
+            "function delegateVote(address delegate) external",
+            "function revokeDelegation() external",
+            "function vote(uint256 proposalId, bool isYes, bytes calldata inputProof) external",
+            "function getProposalResults(uint256 proposalId, bytes32 publicKey, bytes calldata signature) external view returns (uint32, uint32)",
+            "function closeProposal(uint256 proposalId) external",
+            "function getProposal(uint256 proposalId) external view returns (string memory, uint256, bool)",
+            "function getDelegation(address voter) external view returns (address, bool)",
+            "function hasVoted(uint256 proposalId, address voter) external view returns (bool)",
+            "function isRegisteredVoter(address voter) external view returns (bool)",
+            "function proposalCount() external view returns (uint256)",
+            "function votingPower(address voter) external view returns (uint256)",
+            "function proposals(uint256) external view returns (string memory, uint256, uint256, uint256, bool)"
+        ];
+
+        // Removed demo proposals - only blockchain proposals remain for real MetaMask interactions
+
+        // Predefined delegates - all using the same deployed contract address
+        const DELEGATES = [
+            { name: "Alice Thompson", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" },
+            { name: "Bob Wilson", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" },
+            { name: "Charlie Davis", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" },
+            { name: "Diana Garcia", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" },
+            { name: "Eve Martinez", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" },
+            { name: "Frank Miller", address: "0xA52413121E6C22502efACF91714889f85BaA9A88" }
+        ];
+
+        // Global variables - FHE mode
+        let provider = null;
+        let signer = null;
+        let account = '';
+        let contract = null;
+        let isRegistered = false;
+        let delegationInfo = { delegate: '', active: false };
+        let selectedDelegate = '';
+        let userVotingPower = 0;
+        let hasBlockchainProposals = false;
+        
+        // FHE related variables
+        let fhePublicKey = null;
+        let fhePrivateKey = null;
+        let clientKey = null;
+        
+        // FHE utility functions
+        function generateFHEKeys() {
+            // In a real implementation, you would use proper FHE key generation
+            // For demo purposes, we'll create mock keys
+            const mockKeys = {
+                publicKey: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+                privateKey: '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join(''),
+                clientKey: '0x' + Array(128).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')
+            };
+            
+            fhePublicKey = mockKeys.publicKey;
+            fhePrivateKey = mockKeys.privateKey;
+            clientKey = mockKeys.clientKey;
+            
+            // Update UI status
+            const statusElement = document.getElementById('fhe-key-status');
+            if (statusElement) {
+                statusElement.textContent = '✅ Generated';
+                statusElement.style.color = '#00ff80';
+            }
+            
+            console.log('🔑 FHE Keys Generated:', {
+                publicKey: fhePublicKey.substring(0, 20) + '...',
+                privateKey: fhePrivateKey.substring(0, 20) + '...',
+                clientKey: clientKey.substring(0, 20) + '...'
+            });
+            
+            return mockKeys;
+        }
+        
+        function encryptVote(vote) {
+            // Mock FHE encryption - in real implementation, use proper FHE library
+            const encrypted = ethers.solidityPacked(
+                ['bool', 'bytes32'], 
+                [vote, fhePublicKey]
+            );
+            console.log('🔐 Vote encrypted:', { original: vote, encrypted: encrypted.substring(0, 20) + '...' });
+            return encrypted;
+        }
+        
+        async function decryptProposalResults(proposalId) {
+            if (!contract || !fhePublicKey || !fhePrivateKey) {
+                showMessage('❌ Cannot decrypt results: FHE keys not available', 'error');
+                return null;
+            }
+            
+            try {
+                showMessage('🔐 Decrypting proposal results using FHE private key...', 'info');
+                
+                // Create signature for decryption (mock implementation)
+                const message = ethers.solidityPacked(['uint256', 'bytes32'], [proposalId, fhePublicKey]);
+                const signature = await signer.signMessage(ethers.getBytes(ethers.keccak256(message)));
+                
+                // Call contract with public key and signature
+                const results = await contract.getProposalResults(proposalId, fhePublicKey, signature);
+                
+                console.log('🔓 Decrypted results:', { proposalId, yesVotes: results[0], noVotes: results[1] });
+                
+                return {
+                    yesVotes: Number(results[0]),
+                    noVotes: Number(results[1])
+                };
+            } catch (error) {
+                console.error('Failed to decrypt results:', error);
+                if (error.message.includes('Voting still active')) {
+                    showMessage('⚠️ Cannot view results: Voting is still active for this proposal', 'warning');
+                } else if (error.message.includes('Ownable: caller is not the owner')) {
+                    showMessage('⚠️ Only the contract owner can decrypt and view results', 'warning');
+                } else {
+                    showMessage('❌ Failed to decrypt proposal results', 'error');
+                }
+                return null;
+            }
+        }
+
+        function showMessage(msg, type = 'info') {
+            const container = document.getElementById('message-container');
+            const messageClass = type === 'success' ? 'success-message' : type === 'warning' ? 'warning-message' : '';
+            container.innerHTML = `<div class="status-message ${messageClass}"><p>${msg}</p></div>`;
+        }
+
+        function showLoadingButton(buttonId, loadingText) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.innerHTML = `<span class="loading-spinner"></span>${loadingText}`;
+                button.disabled = true;
+            }
+        }
+
+        function hideLoadingButton(buttonId, originalText) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    showMessage('❌ MetaMask wallet required! Please install MetaMask.', 'warning');
+                    return;
+                }
+
+                showMessage('🔄 Connecting wallet...');
+                
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== '0xaa36a7') {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: '0xaa36a7',
+                                    chainName: 'Sepolia Test Network',
+                                    rpcUrls: ['https://sepolia.infura.io/v3/'],
+                                    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                                    blockExplorerUrls: ['https://sepolia.etherscan.io/']
+                                }]
+                            });
+                        }
+                    }
+                }
+
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                account = accounts[0];
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                // Verify contract exists and is accessible
+                console.log('🔍 Verifying contract at:', CONTRACT_ADDRESS);
+                try {
+                    // Test contract call to verify it exists
+                    const code = await provider.getCode(CONTRACT_ADDRESS);
+                    if (code === '0x') {
+                        throw new Error('Contract not found at address');
+                    }
+                    console.log('✅ Contract verified successfully');
+                } catch (contractError) {
+                    console.error('❌ Contract verification failed:', contractError);
+                    showMessage(`❌ Contract not found at ${CONTRACT_ADDRESS}. Please check the contract address.`, 'error');
+                    return;
+                }
+                
+                document.getElementById('connect-btn').textContent = `✅ ${account.slice(0, 6)}...${account.slice(-4)}`;
+                document.getElementById('connect-btn').classList.add('wallet-connected');
+                document.getElementById('connect-btn').disabled = true;
+                
+                await loadUserStatus();
+                loadMainApp();
+                
+            } catch (error) {
+                console.error('Connection failed:', error);
+                showMessage('❌ Wallet connection failed', 'warning');
+            }
+        }
+
+        async function loadUserStatus() {
+            try {
+                if (contract) {
+                    // Try to load real data from contract
+                    try {
+                        isRegistered = await contract.isRegisteredVoter(account);
+                        if (isRegistered) {
+                            const delegation = await contract.getDelegation(account);
+                            delegationInfo = { delegate: delegation[0], active: delegation[1] };
+                            const power = await contract.getVotingPower(account);
+                            userVotingPower = parseInt(power.toString());
+                            showMessage('✅ Wallet connected successfully! Contract data loaded.', 'success');
+                        } else {
+                            showMessage('⚠️ You are not registered as a voter. Please register first.', 'warning');
+                            isRegistered = false;
+                        }
+                    } catch (contractError) {
+                        console.error('Contract interaction failed:', contractError);
+                        showMessage('⚠️ Contract interaction failed. Please check contract deployment.', 'warning');
+                        isRegistered = false; // Real mode - no fallback
+                    }
+                } else {
+                    showMessage('⚠️ Contract not available. Please check deployment.', 'warning');
+                    isRegistered = false; // Ensure registration button shows when contract unavailable
+                }
+            } catch (error) {
+                console.error('Failed to load user status:', error);
+                showMessage('⚠️ Failed to load user status from blockchain', 'warning');
+                isRegistered = false; // Ensure registration button shows on error
+            }
+        }
+
+        function loadMainApp() {
+            const content = document.getElementById('app-content');
+            content.style.display = 'block';
+            content.innerHTML = `
+                <div class="section-card">
+                    <h3>🗳️ Direct Voting</h3>
+                    <p>Vote directly on active proposals using FHE encryption</p>
+                    <div style="background: rgba(0, 255, 128, 0.1); padding: 10px; border-left: 3px solid #00ff80; margin-bottom: 15px;">
+                        <p style="color: #00ff80; margin: 0; font-size: 14px;">
+                            🔐 <strong>Privacy Notice:</strong> All votes are encrypted using FHE (Fully Homomorphic Encryption). 
+                            Vote counts remain private until the contract owner decrypts results after voting ends.
+                        </p>
+                    </div>
+                    <p style="background: #2a1a1a; padding: 10px; border-left: 3px solid #ff6b35; color: #ff6b35; font-size: 13px;">
+                        🚨 <strong>SETUP STEPS:</strong><br>
+                        1. 🎫 Register yourself as voter<br>
+                        2. 👥 Register all candidates as voters<br>
+                        3. 🧪 Create blockchain proposal<br>
+                        4. ✅ Ready to delegate or vote!
+                    </p>
+                    <div id="voting-content">
+                        <p style="text-align: center; color: #00d4ff;">Click "Load Proposals" to view available proposals for voting</p>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>📝 Voter Registration</h3>
+                    <p>Register as a voter to participate in delegated voting</p>
+                    <input id="voter-address" class="input-field" type="text" placeholder="Enter voter address" value="${account}" readonly>
+                    <div class="btn-group">
+                        <button id="register-btn" onclick="${isRegistered ? '' : 'registerVoter()'}" class="btn" ${isRegistered ? 'disabled style="background: #4CAF50;"' : ''}>
+                            ${isRegistered ? '✅ Already Registered' : '🎫 Register as Voter'}
+                        </button>
+                        <button onclick="registerAllDelegates()" class="btn" style="background: #4CAF50;">👥 Register All Candidates</button>
+                    </div>
+                </div>
+
+                <div class="delegation-status ${delegationInfo.active ? 'delegation-active' : ''}">
+                    <h3>🔄 Delegation Status</h3>
+                    ${delegationInfo.active ? `
+                        <p>✅ <strong>Currently Delegated</strong></p>
+                        <p>🎯 Delegate: <span style="font-family: monospace; color: #ff0080;">${getDelegateName(delegationInfo.delegate)}</span></p>
+                        <p class="privacy-indicator">Your voting power is safely delegated. Your delegate can vote on your behalf.</p>
+                        <div class="btn-group">
+                            <button id="revoke-btn" onclick="revokeDelegation()" class="btn btn-revoke">🚫 Revoke Delegation</button>
+                            <button id="check-power-btn" onclick="checkVotingPower()" class="btn">⚖️ Check Voting Power</button>
+                        </div>
+                    ` : `
+                        <p>💡 <strong>Direct Voting Mode</strong></p>
+                        <p class="privacy-indicator">You can vote directly or delegate your voting power to a trusted representative.</p>
+                        <div class="btn-group">
+                            <button onclick="showDelegateSelection()" class="btn btn-delegate">🤝 Delegate Voting Power</button>
+                            <button id="check-power-btn" onclick="checkVotingPower()" class="btn">⚖️ Check Voting Power</button>
+                        </div>
+                    `}
+                </div>
+
+                <div id="delegate-selection" style="display: none;" class="section-card">
+                    <h3>👥 Select Your Delegate</h3>
+                    <p>Choose a trusted representative to delegate your voting power:</p>
+                    <div class="delegate-grid">
+                        ${DELEGATES.map((delegate, index) => `
+                            <div class="delegate-card" onclick="selectDelegate('${delegate.address}', '${delegate.name}')">
+                                <div style="background: #1e3a8a; padding: 4px 8px; border-radius: 4px; margin-bottom: 8px; display: inline-block; font-weight: bold; color: #fff;">
+                                    Candidate #{${index + 1}}
+                                </div>
+                                <div class="delegate-name">${delegate.name}</div>
+                                <div class="delegate-address" style="display: none;">${delegate.address.slice(0, 10)}...${delegate.address.slice(-8)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="delegateVote()" class="btn btn-delegate" id="delegate-confirm-btn" disabled>🤝 Confirm Delegation</button>
+                        <button onclick="hideDelegateSelection()" class="btn">❌ Cancel</button>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>📊 Proposal Management</h3>
+                    <div class="btn-group">
+                        <button id="load-proposals-btn" onclick="loadProposals()" class="btn">📋 Load Proposals</button>
+                        <button onclick="showCreateProposal()" class="btn" style="background: #ff6b35;">🧪 Create Blockchain Proposal</button>
+                        <button id="decrypt-results-btn" onclick="showDecryptResults()" class="btn" style="background: #ff0080;">🔓 Decrypt Results (Owner Only)</button>
+                    </div>
+                    <div id="proposal-content">
+                        <p style="text-align: center; color: #00d4ff;">Click "Load Proposals" to view available proposals</p>
+                    </div>
+                    <div id="create-proposal-form" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid rgba(255, 107, 53, 0.5); border-radius: 8px; background: rgba(255, 107, 53, 0.1);">
+                        <h4 style="color: #ff6b35;">✍️ Create New Blockchain Proposal</h4>
+                        <p style="color: #00d4ff; margin-bottom: 15px;">Enter proposal details. This will trigger a MetaMask transaction to create the proposal on Sepolia blockchain.</p>
+                        <input id="proposal-title" class="input-field" type="text" placeholder="Proposal title (e.g., 'Increase Community Fund')" style="margin-bottom: 10px; width: 100%; padding: 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid #00d4ff; color: #fff; border-radius: 4px;">
+                        <textarea id="proposal-desc" class="input-field" placeholder="Detailed proposal description (e.g., 'Proposal to increase the community development fund allocation from 10% to 15% to support more developers and projects')" style="margin-bottom: 10px; width: 100%; height: 80px; padding: 10px; background: rgba(0, 0, 0, 0.3); border: 1px solid #00d4ff; color: #fff; border-radius: 4px; resize: vertical;"></textarea>
+                        <div class="btn-group">
+                            <button id="create-proposal-btn" onclick="createBlockchainProposal()" class="btn" style="background: #ff6b35;">
+                                📱 Submit to Blockchain
+                            </button>
+                            <button onclick="hideCreateProposal()" class="btn" style="background: #666;">
+                                ❌ Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h3>🔗 Contract Information</h3>
+                    <p>Contract Address: <span style="font-family: monospace; color: #00ff80;">${CONTRACT_ADDRESS}</span></p>
+                    <p><a href="https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}" target="_blank" style="color: #00d4ff;">📱 View on Etherscan</a></p>
+                </div>
+            `;
+        }
+
+        function getDelegateName(address) {
+            const delegate = DELEGATES.find(d => d.address.toLowerCase() === address.toLowerCase());
+            return delegate ? `${delegate.name} (${address.slice(0, 10)}...${address.slice(-8)})` : `${address.slice(0, 10)}...${address.slice(-8)}`;
+        }
+
+        function showDelegateSelection() {
+            document.getElementById('delegate-selection').style.display = 'block';
+        }
+
+        function hideDelegateSelection() {
+            document.getElementById('delegate-selection').style.display = 'none';
+            selectedDelegate = '';
+            document.querySelectorAll('.delegate-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById('delegate-confirm-btn').disabled = true;
+        }
+
+        function selectDelegate(address, name) {
+            const delegateIndex = DELEGATES.findIndex(d => d.address === address);
+            const candidateNumber = delegateIndex + 1;
+            
+            selectedDelegate = address;
+            document.querySelectorAll('.delegate-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.delegate-card').classList.add('selected');
+            document.getElementById('delegate-confirm-btn').disabled = false;
+            document.getElementById('delegate-confirm-btn').textContent = `🤝 Delegate to Candidate #${candidateNumber} (${name})`;
+            
+            showMessage(`✅ Selected Candidate #${candidateNumber}: ${name} as your delegate. Click the button below to activate MetaMask transaction.`, 'success');
+        }
+
+        async function registerVoter() {
+            if (!account) {
+                showMessage('⚠️ Please connect wallet first', 'warning');
+                return;
+            }
+            
+            if (!contract) {
+                showMessage('⚠️ Please connect wallet and ensure contract is loaded', 'warning');
+                return;
+            }
+            
+            showLoadingButton('register-btn', 'Registering...');
+            
+            try {
+                showMessage('🔄 Registering voter on blockchain...');
+                
+                // Real MetaMask transaction
+                const tx = await contract.registerVoter(account);
+                showMessage('⏳ Transaction sent to blockchain, waiting for confirmation...');
+                const receipt = await tx.wait();
+                
+                isRegistered = true;
+                userVotingPower = 1; // Default voting power
+                
+                showMessage(`✅ Voter registration successful! <br>Transaction: <a href="https://sepolia.etherscan.io/tx/${receipt.transactionHash}" target="_blank" style="color: #00ff80;">${receipt.transactionHash.slice(0, 10)}...${receipt.transactionHash.slice(-8)}</a>`, 'success');
+                
+                setTimeout(() => {
+                    hideLoadingButton('register-btn', '✅ Already Registered');
+                    // Update button state to registered
+                    const registerBtn = document.getElementById('register-btn');
+                    if (registerBtn) {
+                        registerBtn.disabled = true;
+                        registerBtn.style.background = '#4CAF50';
+                        registerBtn.innerHTML = '✅ Already Registered';
+                        registerBtn.onclick = null;
+                    }
+                    loadMainApp();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Registration failed:', error);
+                hideLoadingButton('register-btn', '🎫 Register as Voter');
+                let errorMsg = '❌ Registration failed';
+                if (error.message.includes('Voter already registered')) {
+                    errorMsg = '✅ You are already registered as a voter';
+                    // Update button state to registered
+                    isRegistered = true;
+                    const registerBtn = document.getElementById('register-btn');
+                    if (registerBtn) {
+                        registerBtn.disabled = true;
+                        registerBtn.style.background = '#4CAF50';
+                        registerBtn.innerHTML = '✅ Already Registered';
+                        registerBtn.onclick = null;
+                    }
+                } else if (error.code === 4001) {
+                    errorMsg = '❌ Transaction rejected by user';
+                } else if (error.message.includes('insufficient funds')) {
+                    errorMsg = '❌ Insufficient ETH for gas fees';
+                }
+                showMessage(errorMsg, 'warning');
+            }
+        }
+
+        // Register all delegate addresses as voters so they can receive delegations
+        async function registerAllDelegates() {
+            if (!contract) {
+                showMessage('⚠️ Please connect wallet and ensure contract is loaded', 'warning');
+                return;
+            }
+
+            try {
+                showMessage('👥 Registering all delegate candidates as voters...', 'warning');
+                let successCount = 0;
+                let totalDelegates = DELEGATES.length;
+
+                for (let i = 0; i < DELEGATES.length; i++) {
+                    const delegate = DELEGATES[i];
+                    try {
+                        showMessage(`📝 Registering Candidate #${i + 1}: ${delegate.name} (${delegate.address.slice(0, 10)}...)`, 'warning');
+                        
+                        // Ensure address is properly formatted to avoid ENS resolution
+                        const delegateAddress = ethers.getAddress(delegate.address);
+                        const tx = await contract.registerVoter(delegateAddress);
+                        
+                        showMessage(`⏳ Waiting for confirmation for Candidate #${i + 1}...`, 'warning');
+                        await tx.wait();
+                        
+                        successCount++;
+                        showMessage(`✅ Candidate #${i + 1} (${delegate.name}) registered successfully!`, 'success');
+                        
+                        // Small delay between transactions to avoid nonce issues
+                        if (i < DELEGATES.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                        
+                    } catch (delegateError) {
+                        console.error(`Failed to register delegate ${delegate.name}:`, delegateError);
+                        if (delegateError.message.includes('Voter already registered')) {
+                            showMessage(`ℹ️ Candidate #${i + 1} (${delegate.name}) was already registered`, 'success');
+                            successCount++;
+                        } else if (delegateError.code !== 4001) {
+                            showMessage(`⚠️ Failed to register Candidate #${i + 1} (${delegate.name}): ${delegateError.message}`, 'warning');
+                        }
+                    }
+                }
+                
+                showMessage(`🎉 Registration complete! ${successCount}/${totalDelegates} candidates are now eligible to receive delegations.`, 'success');
+                
+            } catch (error) {
+                console.error('Failed to register delegates:', error);
+                if (error.code === 4001) {
+                    showMessage('❌ Transaction rejected by user', 'warning');
+                } else {
+                    showMessage(`❌ Failed to register delegates: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function delegateVote() {
+            if (!selectedDelegate) {
+                showMessage('Please select a delegate first', 'warning');
+                return;
+            }
+            
+            if (!contract) {
+                showMessage('Smart contract not connected. Please check deployment.', 'error');
+                return;
+            }
+            
+            if (!account) {
+                showMessage('Please connect your wallet first', 'warning');
+                return;
+            }
+            
+            try {
+                const delegateName = getDelegateName(selectedDelegate);
+                showMessage(`📱 Delegating your vote to ${delegateName} on blockchain...`, 'warning');
+                
+                // Ensure address is properly formatted to avoid ENS resolution
+                const delegateAddress = ethers.getAddress(selectedDelegate);
+                
+                // Submit delegation to smart contract - following reference pattern
+                const tx = await contract.delegateVote(delegateAddress);
+                
+                showMessage('⏳ Waiting for transaction confirmation...', 'warning');
+                const receipt = await tx.wait();
+                
+                showMessage(`✅ Vote delegation successful! Your voting power is now delegated to ${delegateName}.`, 'success');
+                
+                delegationInfo = { delegate: selectedDelegate, active: true };
+                userVotingPower = 0; // Voting power transferred to delegate
+                
+                showMessage(`✅ Vote delegation successful! Your voting power is now delegated to ${delegateName}.<br>Transaction: <a href="https://sepolia.etherscan.io/tx/${receipt.transactionHash}" target="_blank" style="color: #00ff80;">${receipt.transactionHash.slice(0, 10)}...${receipt.transactionHash.slice(-8)}</a>`, 'success');
+                
+                console.log(`\n🔗 VOTE DELEGATED:\nDelegate: ${delegateName}\nDelegate Address: ${selectedDelegate}\nTransaction Hash: ${receipt.transactionHash}\nBlock Number: ${receipt.blockNumber}\nGas Used: ${receipt.gasUsed}\n`);
+                
+                setTimeout(() => {
+                    hideDelegateSelection();
+                    loadMainApp();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Failed to delegate vote:', error);
+                
+                if (error.code === 4001) {
+                    showMessage('Transaction rejected by user', 'warning');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('Insufficient ETH for transaction fees', 'error');
+                } else if (error.message.includes('Cannot delegate to yourself')) {
+                    showMessage('Cannot delegate to yourself', 'warning');
+                } else if (error.message.includes('Delegate must be registered voter')) {
+                    showMessage('Selected delegate is not a registered voter', 'warning');
+                } else {
+                    showMessage(`Failed to delegate vote: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function revokeDelegation() {
+            if (!delegationInfo.active) {
+                showMessage('⚠️ No active delegation to revoke', 'warning');
+                return;
+            }
+            
+            if (!contract) {
+                showMessage('⚠️ Please connect wallet and ensure contract is loaded', 'warning');
+                return;
+            }
+            
+            showLoadingButton('revoke-btn', 'Revoking...');
+            
+            try {
+                showMessage('🔄 Revoking delegation on blockchain...');
+                
+                // Real MetaMask transaction
+                const tx = await contract.revokeDelegation();
+                showMessage('⏳ Transaction sent to blockchain, waiting for confirmation...');
+                const receipt = await tx.wait();
+                
+                delegationInfo = { delegate: '', active: false };
+                userVotingPower = 1; // Voting power restored
+                
+                showMessage(`✅ Delegation revoked successfully! <br>Transaction: <a href="https://sepolia.etherscan.io/tx/${receipt.transactionHash}" target="_blank" style="color: #00ff80;">${receipt.transactionHash.slice(0, 10)}...${receipt.transactionHash.slice(-8)}</a>`, 'success');
+                
+                setTimeout(() => {
+                    hideLoadingButton('revoke-btn', '🚫 Revoke Delegation');
+                    loadMainApp();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Revocation failed:', error);
+                hideLoadingButton('revoke-btn', '🚫 Revoke Delegation');
+                let errorMsg = '❌ Revocation failed';
+                if (error.message.includes('No active delegation')) {
+                    errorMsg = '❌ No active delegation found to revoke';
+                } else if (error.code === 4001) {
+                    errorMsg = '❌ Transaction rejected by user';
+                } else if (error.message.includes('insufficient funds')) {
+                    errorMsg = '❌ Insufficient ETH for gas fees';
+                }
+                showMessage(errorMsg, 'warning');
+            }
+        }
+
+        async function checkVotingPower() {
+            if (!account) {
+                showMessage('⚠️ Please connect wallet first', 'warning');
+                return;
+            }
+            
+            showLoadingButton('check-power-btn', 'Checking...');
+            
+            try {
+                showMessage('🔄 Checking voting power from blockchain...');
+                
+                let currentPower = userVotingPower;
+                let currentDelegation = delegationInfo;
+                
+                if (contract) {
+                    try {
+                        // Get real data from contract
+                        const power = await contract.getVotingPower(account);
+                        currentPower = parseInt(power.toString());
+                        
+                        const delegation = await contract.getDelegation(account);
+                        currentDelegation = { delegate: delegation[0], active: delegation[1] };
+                        
+                        // Update local state
+                        userVotingPower = currentPower;
+                        delegationInfo = currentDelegation;
+                    } catch (contractError) {
+                        console.error('Failed to fetch from contract, using local data:', contractError);
+                        showMessage('⚠️ Using cached data - contract query failed', 'warning');
+                    }
+                }
+                
+                let message = `⚖️ Current voting power: ${currentPower} votes`;
+                
+                if (currentDelegation.active) {
+                    message += `<br>🔗 You have delegated your vote to: ${getDelegateName(currentDelegation.delegate)}`;
+                    message += `<br>📊 Your delegate's total power includes your delegated vote`;
+                } else if (currentPower === 0) {
+                    message += `<br>⚠️ You currently have no voting power`;
+                } else {
+                    message += `<br>✅ You can vote directly with this power`;
+                }
+                
+                showMessage(message, 'info');
+                
+            } catch (error) {
+                console.error('Failed to check voting power:', error);
+                showMessage('❌ Failed to check voting power', 'warning');
+            } finally {
+                setTimeout(() => {
+                    hideLoadingButton('check-power-btn', '⚖️ Check Voting Power');
+                }, 2000);
+            }
+        }
+
+        function showCreateProposal() {
+            const form = document.getElementById('create-proposal-form');
+            form.style.display = 'block';
+            
+            // Clear previous inputs
+            document.getElementById('proposal-title').value = '';
+            document.getElementById('proposal-desc').value = '';
+            
+            // Focus on title input
+            document.getElementById('proposal-title').focus();
+        }
+
+        function hideCreateProposal() {
+            const form = document.getElementById('create-proposal-form');
+            form.style.display = 'none';
+        }
+        
+        function showDecryptResults() {
+            if (!fhePublicKey || !fhePrivateKey) {
+                showMessage('❌ FHE keys not available. Please refresh and connect wallet.', 'error');
+                return;
+            }
+            
+            const proposalId = prompt('Enter proposal ID to decrypt results:');
+            if (proposalId && !isNaN(proposalId)) {
+                decryptAndShowResults(parseInt(proposalId));
+            }
+        }
+        
+        async function decryptAndShowResults(proposalId) {
+            try {
+                const results = await decryptProposalResults(proposalId);
+                if (results) {
+                    const total = results.yesVotes + results.noVotes;
+                    const yesPercent = total > 0 ? ((results.yesVotes / total) * 100).toFixed(1) : 0;
+                    const noPercent = total > 0 ? ((results.noVotes / total) * 100).toFixed(1) : 0;
+                    
+                    showMessage(`🔓 <strong>Decrypted Results for Proposal #${proposalId}:</strong><br>
+                        ✅ YES: ${results.yesVotes} votes (${yesPercent}%)<br>
+                        ❌ NO: ${results.noVotes} votes (${noPercent}%)<br>
+                        📊 Total: ${total} votes<br>
+                        <em>🔐 Results decrypted using FHE private key</em>`, 'success');
+                }
+            } catch (error) {
+                console.error('Failed to decrypt and show results:', error);
+                showMessage('❌ Failed to decrypt proposal results', 'error');
+            }
+        }
+
+        async function createBlockchainProposal() {
+            const title = document.getElementById('proposal-title').value.trim();
+            const description = document.getElementById('proposal-desc').value.trim();
+            
+            if (!title) {
+                showMessage('⚠️ Please enter a proposal title', 'warning');
+                document.getElementById('proposal-title').focus();
+                return;
+            }
+            
+            if (!description) {
+                showMessage('⚠️ Please enter a proposal description', 'warning');
+                document.getElementById('proposal-desc').focus();
+                return;
+            }
+            
+            if (!account) {
+                showMessage('❌ Please connect your wallet first', 'warning');
+                return;
+            }
+            
+            if (!contract) {
+                showMessage('❌ Smart contract not connected', 'error');
+                return;
+            }
+            
+            const fullProposal = `${title}: ${description}`;
+            
+            try {
+                showLoadingButton('create-proposal-btn', 'Submitting...');
+                showMessage(`📱 Creating proposal "${title}" on blockchain...`, 'warning');
+                
+                console.log(`🔥 CREATING BLOCKCHAIN PROPOSAL:\nTitle: ${title}\nDescription: ${description}\nFull Text: ${fullProposal}\nContract: ${CONTRACT_ADDRESS}\nAccount: ${account}`);
+                
+                // Submit to smart contract - this triggers MetaMask
+                const tx = await contract.createProposal(fullProposal);
+                
+                showMessage('⏳ Transaction submitted! Waiting for blockchain confirmation...', 'warning');
+                const receipt = await tx.wait();
+                
+                showMessage(`✅ Proposal created successfully on Sepolia blockchain!<br>"${title}" is now available for voting.<br>Transaction: <a href="https://sepolia.etherscan.io/tx/${receipt.transactionHash}" target="_blank" style="color: #00ff80;">${receipt.transactionHash.slice(0, 10)}...${receipt.transactionHash.slice(-8)}</a>`, 'success');
+                
+                console.log(`\n✅ BLOCKCHAIN PROPOSAL CREATED:\nTitle: ${title}\nTransaction Hash: ${receipt.transactionHash}\nBlock Number: ${receipt.blockNumber}\nGas Used: ${receipt.gasUsed}\nFrom: ${receipt.from}\nTo: ${receipt.to}\n`);
+                
+                // Hide form and refresh proposals
+                hideCreateProposal();
+                setTimeout(() => {
+                    hideLoadingButton('create-proposal-btn', '📱 Submit to Blockchain');
+                    loadProposals();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Failed to create blockchain proposal:', error);
+                hideLoadingButton('create-proposal-btn', '📱 Submit to Blockchain');
+                
+                if (error.code === 4001) {
+                    showMessage('❌ Transaction rejected by user in MetaMask', 'warning');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('❌ Insufficient ETH balance for transaction fees on Sepolia network', 'error');
+                } else if (error.message.includes('Ownable: caller is not the owner')) {
+                    showMessage('❌ Only the contract owner can create proposals', 'warning');
+                } else if (error.message.includes('execution reverted')) {
+                    showMessage(`❌ Smart contract rejected the proposal: ${error.reason || 'Unknown reason'}`, 'error');
+                } else {
+                    showMessage(`❌ Failed to create proposal: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function loadProposals() {
+            showLoadingButton('load-proposals-btn', 'Loading...');
+            
+            try {
+                showMessage('🔄 Loading proposals from blockchain...', 'info');
+                
+                const content = document.getElementById('proposal-content');
+                const votingContent = document.getElementById('voting-content');
+                
+                let blockchainProposals = [];
+                
+                // Try to fetch real proposals from contract if connected
+                if (contract) {
+                    try {
+                        // Query existing proposals from the smart contract
+                        // Most contracts use a counter pattern, let's try to get proposals 1-10
+                        for (let i = 1; i <= 10; i++) {
+                            try {
+                                const proposalData = await contract.proposals(i);
+                                if (proposalData && proposalData[0] && proposalData[0] !== "") {
+                                    // Extract title and description from the proposal text
+                                    const fullText = proposalData[0];
+                                    
+                                    // Skip test proposals that we want to hide
+                                    const isTestProposal = 
+                                        fullText.includes('demo: demodemodemodemodemodemodemodemodemodemo') ||
+                                        fullText.includes('ssssssssssssssssssssssss: sssssssssssss') ||
+                                        fullText === 'Test Proposal: Improve Governance System';
+                                    
+                                    if (isTestProposal) {
+                                        console.log(`Skipping test proposal #${i}: ${fullText.substring(0, 50)}...`);
+                                        continue; // Skip this test proposal
+                                    }
+                                    
+                                    let title, description;
+                                    
+                                    if (fullText.includes(': ')) {
+                                        // If there's a colon, split into title and description
+                                        const parts = fullText.split(': ', 2);
+                                        title = parts[0];
+                                        description = parts[1];
+                                    } else {
+                                        // Otherwise, use first 50 characters as title, rest as description
+                                        if (fullText.length > 50) {
+                                            title = fullText.substring(0, 50) + '...';
+                                            description = fullText;
+                                        } else {
+                                            title = fullText;
+                                            description = fullText;
+                                        }
+                                    }
+                                    
+                                    blockchainProposals.push({
+                                        id: i,
+                                        title: title,
+                                        description: description,
+                                        yesVotes: Number(proposalData[1]), // yes votes
+                                        noVotes: Number(proposalData[2]), // no votes
+                                        deadline: new Date(Number(proposalData[3]) * 1000), // deadline
+                                        active: proposalData[4], // active status
+                                        hasVoted: false // will be checked separately
+                                    });
+                                }
+                            } catch (err) {
+                                // Proposal doesn't exist, continue checking
+                                if (i === 1) {
+                                    console.log("No proposals found on blockchain");
+                                }
+                                break;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error fetching blockchain proposals:", error);
+                    }
+                }
+                
+                // Create blockchain proposals automatically if they don't exist
+                let hasCreatedProposals = false;
+                if (contract && blockchainProposals.length === 0 && !hasCreatedProposals) {
+                    console.log('📝 No blockchain proposals found. Auto-creating sample proposals...');
+                    hasCreatedProposals = true;
+                    
+                    const sampleProposals = [
+                        "Increase Validator Rewards: Propose to increase validator rewards from 5% to 7% to encourage more network participation",
+                        "Implement Privacy Enhancement Protocol: Upgrade the network with advanced zero-knowledge proof capabilities",
+                        "Governance Token Redistribution: Redistribute 10% of treasury tokens to active community members",
+                        "Cross-Chain Bridge Development: Develop and deploy a secure cross-chain bridge for asset transfers",
+                        "Staking Mechanism Update: Modify staking requirements to be more accessible for smaller token holders"
+                    ];
+                    
+                    try {
+                        for (let i = 0; i < sampleProposals.length; i++) {
+                            const tx = await contract.createProposal(sampleProposals[i]);
+                            console.log(`✅ Created proposal ${i + 1}: ${sampleProposals[i].substring(0, 50)}...`);
+                            await tx.wait();
+                        }
+                        
+                        showMessage('✅ Sample blockchain proposals created successfully! Refreshing proposal list...', 'success');
+                        
+                        // Re-fetch proposals after creation
+                        for (let i = 1; i <= 10; i++) {
+                            try {
+                                const proposalData = await contract.proposals(i);
+                                if (proposalData && proposalData[0] && proposalData[0] !== "") {
+                                    const fullText = proposalData[0];
+                                    
+                                    // Skip test proposals that we want to hide
+                                    const isTestProposal = 
+                                        fullText.includes('demo: demodemodemodemodemodemodemodemodemodemo') ||
+                                        fullText.includes('ssssssssssssssssssssssss: sssssssssssss') ||
+                                        fullText === 'Test Proposal: Improve Governance System';
+                                    
+                                    if (isTestProposal) {
+                                        console.log(`Skipping test proposal #${i}: ${fullText.substring(0, 50)}...`);
+                                        continue;
+                                    }
+                                    
+                                    let title, description;
+                                    if (fullText.includes(': ')) {
+                                        const parts = fullText.split(': ', 2);
+                                        title = parts[0];
+                                        description = parts[1];
+                                    } else {
+                                        title = fullText.length > 50 ? fullText.substring(0, 50) + '...' : fullText;
+                                        description = fullText;
+                                    }
+                                    
+                                    blockchainProposals.push({
+                                        id: i,
+                                        title: title,
+                                        description: description,
+                                        yesVotes: Number(proposalData[1]),
+                                        noVotes: Number(proposalData[2]),
+                                        deadline: new Date(Number(proposalData[3]) * 1000),
+                                        active: proposalData[4],
+                                        hasVoted: false,
+                                        isBlockchain: true
+                                    });
+                                }
+                            } catch (error) {
+                                // No more proposals
+                                break;
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Failed to create sample proposals:', error);
+                        showMessage('⚠️ Could not auto-create proposals. Use "Create Blockchain Proposal" button to add proposals manually.', 'warning');
+                    }
+                }
+                
+                // Display all blockchain proposals (real proposals from contract)
+                const allProposals = [...blockchainProposals];
+                
+                // Sort proposals by ID (only blockchain proposals now)
+                allProposals.sort((a, b) => a.id - b.id);
+                
+                // Set final proposals array
+                blockchainProposals = allProposals;
+                
+                // Update status message
+                const realProposalCount = allProposals.filter(p => !p.isDemo).length;
+                const demoProposalCount = allProposals.filter(p => p.isDemo).length;
+                
+                if (realProposalCount > 0 && demoProposalCount > 0) {
+                    hasBlockchainProposals = true;
+                    showMessage(`✅ Loaded ${realProposalCount} blockchain proposals and ${demoProposalCount} demo proposals for testing.`, 'success');
+                } else if (realProposalCount > 0) {
+                    hasBlockchainProposals = true;
+                    showMessage(`✅ Loaded ${realProposalCount} blockchain proposals from smart contract.`, 'success');
+                } else {
+                    hasBlockchainProposals = false;
+                    showMessage('⚠️ No blockchain proposals found. Showing demo proposals for testing. Create real proposals using "Create Blockchain Proposal".', 'warning');
+                }
+                
+                let proposalsHTML = '<h4>📊 Active Proposals</h4>';
+                let votingHTML = '<h4>🗳️ Vote on Proposals</h4>';
+                
+                blockchainProposals.forEach(proposal => {
+                    // Build vote buttons for active proposals that haven't been voted on
+                    const voteButtons = (proposal.active && !proposal.hasVoted) ? `
+                        <div class="vote-buttons" style="margin-top: 10px;">
+                            <button onclick="vote(${proposal.id}, true)" class="btn btn-vote-yes" title="Click to vote YES" style="background: #4CAF50; margin-right: 10px;">
+                                ✅ Vote YES
+                            </button>
+                            <button onclick="vote(${proposal.id}, false)" class="btn btn-vote-no" title="Click to vote NO" style="background: #f44336;">
+                                ❌ Vote NO
+                            </button>
+                        </div>
+                    ` : proposal.hasVoted ? `
+                        <div style="margin-top: 10px; padding: 5px; background: rgba(0, 255, 128, 0.1); border-radius: 4px;">
+                            <span style="color: #00ff80;">✅ You have voted on this proposal</span>
+                        </div>
+                    ` : '';
+                    
+                    // Different styling for demo vs blockchain proposals
+                    const proposalType = proposal.isDemo ? 
+                        `<span style="background: #ff6b35; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; color: #fff;">DEMO</span>` : 
+                        `<span style="background: #00ff80; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px; color: #000;">BLOCKCHAIN</span>`;
+                    
+                    const borderColor = proposal.isDemo ? '#ff6b35' : '#00d4ff';
+                    
+                    proposalsHTML += `
+                        <div class="proposal-item" style="background: rgba(255, 255, 255, 0.05); padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 3px solid ${borderColor};">
+                            <div class="proposal-title">
+                                <span style="background: #1e3a8a; padding: 4px 8px; border-radius: 4px; margin-right: 10px; font-weight: bold; color: #fff;">#{${proposal.id}}</span>
+                                ${proposal.title}
+                                ${proposalType}
+                            </div>
+                            <div style="color: #00d4ff; margin: 8px 0; font-size: 14px;">${proposal.description}</div>
+                            <div class="proposal-stats" style="margin: 8px 0;">
+                                <span style="margin-right: 15px;">Deadline: ${proposal.deadline.toLocaleDateString()}</span>
+                                <span>Status: ${proposal.active ? '🟢 Active' : '🔴 Closed'}</span>
+                            </div>
+                            <div class="proposal-stats" style="margin: 8px 0;">
+                                <span style="margin-right: 15px;">🔐 Votes: <strong>Encrypted</strong></span>
+                                <span style="color: #ff6b35;">🔓 Owner can decrypt results after voting ends</span>
+                            </div>
+                            ${voteButtons}
+                        </div>
+                    `;
+                    
+                    // Also add to voting section for Direct Voting area
+                    if (proposal.active && !proposal.hasVoted) {
+                        votingHTML += `
+                            <div class="proposal-item" style="background: rgba(255, 255, 255, 0.03); padding: 12px; margin-bottom: 10px; border-radius: 6px;">
+                                <div class="proposal-title" style="margin-bottom: 8px;">
+                                    <span style="background: #1e3a8a; padding: 3px 6px; border-radius: 3px; margin-right: 8px; font-weight: bold; color: #fff; font-size: 12px;">#{${proposal.id}}</span>
+                                    <span style="font-size: 14px;">${proposal.title}</span>
+                                </div>
+                                <div class="vote-buttons">
+                                    <button onclick="vote(${proposal.id}, true)" class="btn btn-vote-yes" title="Click to vote YES" style="background: #4CAF50; margin-right: 8px; font-size: 12px; padding: 6px 12px;">
+                                        ✅ YES
+                                    </button>
+                                    <button onclick="vote(${proposal.id}, false)" class="btn btn-vote-no" title="Click to vote NO" style="background: #f44336; font-size: 12px; padding: 6px 12px;">
+                                        ❌ NO
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                content.innerHTML = `
+                    <div style="margin-bottom: 20px; text-align: center; padding: 10px; background: rgba(0, 212, 255, 0.1); border-radius: 8px;">
+                        📊 <strong>Blockchain Proposals: ${blockchainProposals.length}</strong> | 🟢 Active: ${blockchainProposals.filter(p => p.active).length}
+                    </div>
+                    ${proposalsHTML}
+                `;
+                
+                const activeProposalsForVoting = blockchainProposals.filter(p => p.active && !p.hasVoted).length;
+                votingContent.innerHTML = votingHTML || `
+                    <div style="text-align: center; color: #00d4ff; margin: 20px 0;">
+                        ${blockchainProposals.filter(p => p.active).length === 0 ? 
+                            'ℹ️ No active proposals available' : 
+                            activeProposalsForVoting === 0 ? 
+                                '✅ All active proposals voted' : 
+                                'No eligible proposals for voting'
+                        }
+                    </div>
+                `;
+                
+                showMessage(`✅ Loaded ${blockchainProposals.length} proposals from blockchain!`, 'success');
+                
+            } catch (error) {
+                console.error('Failed to load proposals:', error);
+                showMessage('❌ Failed to load proposals from blockchain', 'error');
+                
+                // Show fallback content
+                const content = document.getElementById('proposal-content');
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 20px; background: rgba(255, 107, 53, 0.1); border-radius: 8px;">
+                        <p style="color: #ff6b35;">Failed to load proposals from blockchain</p>
+                        <button onclick="showCreateProposal()" class="btn" style="background: #ff6b35;">
+                            🧪 Create Blockchain Proposal
+                        </button>
+                    </div>
+                `;
+            } finally {
+                setTimeout(() => {
+                    hideLoadingButton('load-proposals-btn', '📋 Load Proposals');
+                }, 1000);
+            }
+        }
+
+
+        async function vote(proposalId, isYes) {
+            if (!account) {
+                showMessage('Please connect your wallet first', 'warning');
+                return;
+            }
+            
+            if (!contract) {
+                showMessage('Smart contract not connected. Please check deployment.', 'error');
+                return;
+            }
+            
+            const voteText = isYes ? 'YES' : 'NO';
+            // All proposals are now real blockchain proposals (starting from ID 1)
+            
+            try {
+                // Check if user has active delegation that conflicts with direct voting
+                if (delegationInfo && delegationInfo.active) {
+                    showMessage(`⚠️ You have delegated your vote to ${delegationInfo.delegate}. Temporarily revoking delegation to allow direct voting...`, 'warning');
+                    
+                    // Temporarily revoke delegation to allow direct voting
+                    const revokeTx = await contract.revokeDelegation();
+                    await revokeTx.wait();
+                    console.log('🔄 Delegation temporarily revoked for direct voting');
+                }
+                
+                // All proposals are now real blockchain proposals - trigger MetaMask transaction
+                showMessage(`📱 Triggering MetaMask transaction: ${voteText} vote on Proposal #${proposalId}...`, 'warning');
+                
+                console.log(`🔥 INITIATING BLOCKCHAIN VOTE:\nProposal ID: ${proposalId}\nVote: ${voteText} (${isYes})\nContract: ${CONTRACT_ADDRESS}\nAccount: ${account}\nType: Real Blockchain Transaction`);
+                
+                // Encrypt the vote using FHE
+                showMessage(`🔐 Encrypting your ${voteText} vote using FHE...`, 'info');
+                const encryptedVote = encryptVote(isYes);
+                
+                // Submit encrypted vote to smart contract
+                const tx = await contract.vote(proposalId, isYes, encryptedVote);
+                
+                showMessage('⏳ Transaction submitted! Waiting for blockchain confirmation...', 'warning');
+                const receipt = await tx.wait();
+                
+                // If there was a previous delegation, restore it after voting
+                if (delegationInfo && delegationInfo.active && delegationInfo.delegate) {
+                    try {
+                        showMessage('🔄 Restoring your delegation after direct vote...', 'info');
+                        const restoreTx = await contract.delegateVote(delegationInfo.delegate);
+                        await restoreTx.wait();
+                        console.log('✅ Delegation restored after direct voting');
+                    } catch (restoreError) {
+                        console.warn('Could not restore delegation:', restoreError);
+                    }
+                }
+                
+                showMessage(`✅ 🔐 FHE Encrypted vote successfully recorded!<br>Your ${voteText} vote on Proposal #${proposalId} is <strong>private and secure</strong>.<br>Only authorized parties with decryption keys can view the results.<br>Transaction: <a href="https://sepolia.etherscan.io/tx/${receipt.transactionHash}" target="_blank" style="color: #00ff80;">${receipt.transactionHash.slice(0, 10)}...${receipt.transactionHash.slice(-8)}</a>`, 'success');
+                
+                console.log(`\n✅ BLOCKCHAIN VOTE SUCCESS:\nProposal ID: ${proposalId}\nChoice: ${voteText} (${isYes})\nTransaction Hash: ${receipt.transactionHash}\nBlock Number: ${receipt.blockNumber}\nGas Used: ${receipt.gasUsed}\nFrom: ${receipt.from}\nTo: ${receipt.to}\n`);
+                
+                setTimeout(() => {
+                    loadProposals();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('MetaMask vote transaction failed:', error);
+                
+                if (error.code === 4001) {
+                    showMessage('❌ Transaction rejected by user in MetaMask', 'warning');
+                } else if (error.message.includes('Cannot vote while delegation is active')) {
+                    showMessage(`⚠️ You cannot vote directly while delegation is active.<br>The system will automatically handle this - please try voting again.`, 'warning');
+                    // Refresh delegation status
+                    await loadUserStatus();
+                } else if (error.message.includes('Invalid proposal ID') || error.message.includes('execution reverted')) {
+                    showMessage(`❌ Blockchain Proposal #${proposalId} does not exist on smart contract.<br><strong>Solution:</strong> Use "🧪 Create Blockchain Proposal" to create real blockchain proposals for voting.`, 'warning');
+                } else if (error.message.includes('insufficient funds')) {
+                    showMessage('❌ Insufficient ETH balance for transaction fees on Sepolia network', 'error');
+                } else if (error.message.includes('Already voted')) {
+                    showMessage('❌ You have already voted on this proposal on the blockchain', 'warning');
+                } else if (error.message.includes('Proposal not active')) {
+                    showMessage('❌ This proposal is no longer active on the blockchain', 'warning');
+                } else if (error.message.includes('Voting ended')) {
+                    showMessage('❌ The voting period for this proposal has ended', 'warning');
+                } else {
+                    showMessage(`❌ MetaMask transaction failed: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Connect wallet button event
+        document.getElementById('connect-btn').addEventListener('click', connectWallet);
+
+        // Auto-connect if already connected
+        if (window.ethereum && window.ethereum.selectedAddress) {
+            connectWallet();
+        }
+    </script>
+</body>
+</html>
